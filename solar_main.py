@@ -9,6 +9,7 @@ from solar_objects import *
 import thorpy
 import time
 import numpy as np
+from tkinter.filedialog import *
 
 timer = None
 
@@ -21,12 +22,13 @@ model_time = 0
 """Физическое время от начала расчёта.
 Тип: float"""
 
-time_scale = 1000.0
+time_scale = 1000000.0
 """Шаг по времени при моделировании.
 Тип: float"""
 
 space_objects = []
 """Список космических объектов."""
+
 
 def execution(delta):
     """Функция исполнения -- выполняется циклически, вызывая обработку всех небесных тел,
@@ -36,6 +38,7 @@ def execution(delta):
     """
     global model_time
     global displayed_time
+    #print(delta)
     recalculate_space_objects_positions([dr.obj for dr in space_objects], delta)
     model_time += delta
 
@@ -47,9 +50,11 @@ def start_execution():
     global perform_execution
     perform_execution = True
 
+
 def pause_execution():
     global perform_execution
     perform_execution = False
+
 
 def stop_execution():
     """Обработчик события нажатия на кнопку Start.
@@ -57,6 +62,7 @@ def stop_execution():
     """
     global alive
     alive = False
+
 
 def open_file():
     """Открывает диалоговое окно выбора имени файла и вызывает
@@ -68,10 +74,14 @@ def open_file():
     global model_time
 
     model_time = 0.0
-    in_filename = "solar_system.txt"
+    in_filename = askopenfilename(filetypes=(("Text file", ".txt"), ))
     space_objects = read_space_objects_data_from_file(in_filename)
-    max_distance = max([max(abs(obj.obj.x), abs(obj.obj.y)) for obj in space_objects])
+    if in_filename == "solar_system.txt":
+        max_distance = max([max(abs(obj.obj.x), abs(obj.obj.y)) for obj in space_objects])
+    else:
+        max_distance = max([max(abs(obj.obj.x), abs(obj.obj.y)) for obj in space_objects]) * 2
     calculate_scale_factor(max_distance)
+
 
 def handle_events(events, menu):
     global alive
@@ -80,12 +90,15 @@ def handle_events(events, menu):
         if event.type == pg.QUIT:
             alive = False
 
+
 def slider_to_real(val):
     return np.exp(5 + val)
+
 
 def slider_reaction(event):
     global time_scale
     time_scale = slider_to_real(event.el.get_value())
+
 
 def init_ui(screen):
     global browser
@@ -100,32 +113,33 @@ def init_ui(screen):
 
     box = thorpy.Box(elements=[
         slider,
-        button_pause, 
-        button_stop, 
-        button_play, 
+        button_pause,
+        button_stop,
+        button_play,
         button_load,
         timer])
     reaction1 = thorpy.Reaction(reacts_to=thorpy.constants.THORPY_EVENT,
                                 reac_func=slider_reaction,
-                                event_args={"id":thorpy.constants.EVENT_SLIDE},
+                                event_args={"id": thorpy.constants.EVENT_SLIDE},
                                 params={},
                                 reac_name="slider reaction")
     box.add_reaction(reaction1)
-    
+
     menu = thorpy.Menu(box)
     for element in menu.get_population():
         element.surface = screen
 
-    box.set_topleft((0,0))
+    box.set_topleft((0, 0))
     box.blit()
     box.update()
     return menu, box, timer
+
 
 def main():
     """Главная функция главного модуля.
     Создаёт объекты графического дизайна библиотеки tkinter: окно, холст, фрейм с кнопками, кнопки.
     """
-    
+
     global physical_time
     global displayed_time
     global time_step
@@ -139,9 +153,9 @@ def main():
     physical_time = 0
 
     pg.init()
-    
-    width = 1000
-    height = 900
+
+    width = 800
+    height = 800
     screen = pg.display.set_mode((width, height))
     last_time = time.perf_counter()
     drawer = Drawer(screen)
@@ -161,6 +175,7 @@ def main():
         time.sleep(1.0 / 60)
 
     print('Modelling finished!')
+
 
 if __name__ == "__main__":
     main()

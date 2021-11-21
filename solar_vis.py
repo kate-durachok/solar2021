@@ -5,7 +5,7 @@ import pygame as pg
 
 """Модуль визуализации.
 Нигде, кроме этого модуля, не используются экранные координаты объектов.
-Функции, создающие гaрафические объекты и перемещающие их на экране, принимают физические координаты
+Функции, создающие графические объекты и перемещающие их на экране, принимают физические координаты
 """
 
 header_font = "Arial-16"
@@ -78,9 +78,9 @@ class Drawer:
         pg.display.update()
 
 
-class DrawableObject:
+class DrawableObject():
     def __init__(self, obj):
         self.obj = obj
 
     def draw(self, surface):
-        pg.draw.circle(surface, self.obj.color, (self.obj.x, self.obj.y), self.obj.R)
+        pg.draw.circle(surface, self.obj.color, (scale_x(self.obj.x), scale_y(self.obj.y)), self.obj.R)
